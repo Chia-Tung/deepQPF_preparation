@@ -56,11 +56,12 @@ output_data_path/
 │   ...
 ```
 ```bash
+# cmd:
 python main_rain.py \
     <input_data_path> \
     <output_data_path> \
     -c <store_json_path> \
     --type all
 ```
-:warning: Only suitable for NetCDF files with a specific shape (561x441). For more customized settings, please check `utils/raw_data.py`.
+:warning: Only suitable for NetCDF files with a specific shape (561x441). For more customized settings, please check `utils/raw_data.py`.  
 :warning: Only *SKIP* mode, no *OVERWRITE* mode.
