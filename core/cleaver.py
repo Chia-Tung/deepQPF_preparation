@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 
 from utils.raw_data import load_nc, save_nc
 from utils.file_util import get_latest
-from utils.array_data import FixedSizeArray
+from utils.fixed_size_array import FixedSizeArray
 
 class Cleaver:
     def __init__(
@@ -58,7 +58,7 @@ class Cleaver:
                             )  
 
     def _run_all(self):
-        for single_file in tqdm(self.all_files[:10]):
+        for single_file in tqdm(self.all_files):
             self.curr_fname = str(single_file)
             self.curr_dt = self.get_time_from_path(self.curr_fname)
             self.curr_data = load_nc(self.curr_fname)
