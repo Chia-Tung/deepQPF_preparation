@@ -16,7 +16,7 @@ def main(
 ) -> None:
     # instantiate Cleaver object, all of the executions will be done via this object
     rain_cleaver = Cleaver(
-        inp_dir, oup_dir, cwd_dir, slice_type, mask_fname, fixed_array_fname
+        inp_dir, oup_dir, cwd_dir, slice_type, 'qperr', mask_fname, fixed_array_fname
     )
     
     rain_cleaver.run()

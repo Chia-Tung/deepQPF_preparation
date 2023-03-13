@@ -6,9 +6,9 @@ from tqdm import tqdm
 from typing import Tuple
 from datetime import datetime, timedelta
 
-from utils.raw_data import load_nc, save_nc
-from utils.file_util import get_latest
+from utils.file_util import load_nc, save_nc
 from utils.fixed_size_array import FixedSizeArray
+
 
 class Cleaver:
     def __init__(
@@ -17,12 +17,14 @@ class Cleaver:
         oup_dir:str, 
         cwd_dir:str,
         slice_type: str,
+        vname: str,
         mask_fname:str, 
         fixed_array_fname:str, 
     ):
         self.inp_dir = inp_dir
         self.oup_dir = oup_dir
         self.cwd_dir = cwd_dir
+        self.vname = vname
         self.mask_path = os.path.join(cwd_dir, mask_fname)
         self.fixed_size_array_path = os.path.join(cwd_dir, fixed_array_fname)
 
@@ -30,7 +32,7 @@ class Cleaver:
             # get current file and its full path
             self.curr_fname = get_latest(inp_dir)
             self.curr_dt = self.get_time_from_path(self.curr_fname)
-            self.curr_data = load_nc(self.curr_fname) # data shape = [561, 441]
+            self.curr_data, self.lat, self.lon = load_nc(self.curr_fname, self.vname) # data shape = [561, 441]
             self.run = self._run_last
         elif slice_type == "all":
             self.all_files = sorted(list(Path(self.inp_dir).rglob("*.nc")))
@@ -61,7 +63,7 @@ class Cleaver:
         for single_file in tqdm(self.all_files):
             self.curr_fname = str(single_file)
             self.curr_dt = self.get_time_from_path(self.curr_fname)
-            self.curr_data = load_nc(self.curr_fname)
+            self.curr_data, self.lat, self.lon = load_nc(self.curr_fname, self.vname)
             self._run_last()
 
     def _run_last(self):
@@ -93,7 +95,7 @@ class Cleaver:
 
             # 3. save t=-6 nc file
             last_data = fix_sized_array.data[0]
-            save_nc(output_fname, last_data)
+            save_nc(output_fname, last_data, self.vname, self.curr_data.shape, self.lat, self.lon)
             print(f'10-min data: {os.path.basename(output_fname)} established!')
 
             # 4. leave
@@ -125,7 +127,7 @@ class Cleaver:
 
             # 7. save t=-6 nc file
             last_data = fix_sized_array.data[0]
-            save_nc(output_fname, last_data)
+            save_nc(output_fname, last_data, self.vname, self.curr_data.shape, self.lat, self.lon)
             print(f'10-min data: {os.path.basename(output_fname)} established!')
 
             # 8. leave
@@ -193,3 +195,15 @@ class Cleaver:
         # Writing to .json
         with open(self.fixed_size_array_path, "w") as outfile:
             json.dump(information, outfile, indent=2)
+
+def listdir(path: str, rev: bool=True) -> str:
+    """
+    return the latest dir/file in one level
+    """
+    return sorted(os.listdir(path), reverse = rev)[0] # from large to small
+
+def get_latest(dir:str) -> str:
+    year = listdir(dir)
+    yearMonth = listdir(os.path.join(dir, year))
+    file = listdir(os.path.join(dir, year, yearMonth))
+    return os.path.join(dir, year, yearMonth, file)

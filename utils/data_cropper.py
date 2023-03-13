@@ -6,6 +6,8 @@ from typing import List
 from tqdm import tqdm
 from datetime import datetime
 
+from utils.file_util import load_nc, save_nc
+
 
 class Cropper:
     def __init__(
@@ -23,7 +25,7 @@ class Cropper:
 
     def check_dim(self):
         # get matrix attribute
-        _, self.lat_array, self.lon_array = self.read_nc(self.orig_nc_files[0])
+        _, self.lat_array, self.lon_array = load_nc(self.orig_nc_files[0], self.key)
         self.input_shape = (len(self.lat_array), len(self.lon_array))
         print(f"Input latitude: {self.lat_array[0]} ~ {self.lat_array[-1]}")
         print(f"Input longitude: {self.lon_array[0]} ~ {self.lon_array[-1]}")
@@ -47,42 +49,15 @@ class Cropper:
         print(f"Output latitude: {self.lat_array[self.iloc[0]]} ~ {self.lat_array[self.iloc[1]]}")
         print(f"Output longitude: {self.lon_array[self.iloc[2]]} ~ {self.lon_array[self.iloc[3]]}")
         print(f"Output shape: {self.output_shape}")
-        
-
-    def read_nc(self, nc_file: str) -> List[np.array]:
-        ds = nc.Dataset(nc_file)
-        data = ds[self.key][:] #881*921
-        lat = ds['lat'][:] #881
-        lon = ds['lon'][:] #921
-        return data, lat, lon
-
-    def save_nc(
-        self, 
-        target_file_path: str,
-        data: np.array,
-    ) -> None:
-        if not pathlib.Path(target_file_path).parent.exists():
-            pathlib.Path(target_file_path).parent.mkdir(parents = True, exist_ok=True)
-        f = nc.Dataset(target_file_path, 'w', format = 'NETCDF4')
-        f.createDimension('lat', self.output_shape[0])   
-        f.createDimension('lon', self.output_shape[1])
-        f.createVariable(self.key, np.float32, ('lat', 'lon')) 
-        f.createVariable('lat', np.float32, ('lat'))  
-        f.createVariable('lon', np.float32, ('lon'))
-        f.variables['lat'][:] = self.lat_array[self.iloc[0]:self.iloc[1]+1]
-        f.variables['lon'][:] = self.lon_array[self.iloc[2]:self.iloc[3]+1]
-        f.variables[self.key][:] = data
-        f.close()
-        print(f'{target_file_path} is done.')
 
     def execute(
         self, 
         output_path: str,
         remove_old_files: bool = False
     ) -> None:
-        for file in tqdm(self.orig_nc_files[:10]):
+        for file in tqdm(self.orig_nc_files):
             # load
-            data, lat, lon = self.read_nc(file)
+            data, lat, lon = load_nc(file, self.key)
 
             # check action
             if np.shape(data) != self.input_shape:
@@ -99,7 +74,8 @@ class Cropper:
 
             # save
             new_file_path = self.get_hierarchical_path_from_nc(file, output_path)
-            self.save_nc(new_file_path, data)
+            save_nc(new_file_path, data, self.key, self.output_shape, 
+                    self.lat_array[self.iloc[0]:self.iloc[1]+1], self.lon_array[self.iloc[2]:self.iloc[3]+1])
 
     def get_hierarchical_path_from_nc(
         self, 

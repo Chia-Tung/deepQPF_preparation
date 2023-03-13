@@ -3,7 +3,7 @@
 - It has **three** main functions:
   1. [Convert accumulated rainfall (mm) into rain rate (mm/hr)](#1-convert-accumulated-rainfall-mm-into-rain-rate-mmhr)
   2. [Crop the matrix to a target domain](#2-crop-the-matrix-to-a-target-domain)
-  3. Compress data into a sparse matrix
+  3. [Compress data into a sparse matrix](#3-compress-data-into-a-sparse-matrix)
 - Last edit date: 2023-02-19
 
 # Environment Settings
@@ -63,7 +63,7 @@ python main_rain.py \
     -c <store_json_path> \
     --type all
 ```
-:warning: Only suitable for NetCDF files with a specific shape (561x441). For more customized settings, please check `utils/raw_data.py`.  
+:warning: Only suitable for NetCDF files with a specific shape (561x441). For more customized settings, please check `utils/data_util.py`.  
 :warning: Only *SKIP* mode, no *OVERWRITE* mode.  
 :warning: Once the date time is not continuous, the cleaver will reset to zero and keep calculating.
 
@@ -76,4 +76,8 @@ python main_crop.py \
     --latitude_crop 20 27 \
     --longitude_crop 118 123.5 \
     -k cv
+```
+## 3. Compress data into a sparse matrix
+```bash
+
 ```
