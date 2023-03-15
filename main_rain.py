@@ -1,7 +1,7 @@
 import os
 import argparse
 
-from core.cleaver import Cleaver
+from src.cleaver import Cleaver
 
 """
 Split 1-h accumulated rainfall (mm) into 10-m rain rate (mm/h)

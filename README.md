@@ -79,5 +79,9 @@ python main_crop.py \
 ```
 ## 3. Compress data into a sparse matrix
 ```bash
-
+# cmd:
+python main_compress.py \
+    <input_data_dir> \
+    <output_data_dir> \
+    --workers 4
 ```

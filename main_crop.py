@@ -2,7 +2,7 @@ import argparse
 import glob
 from typing import List
 
-from utils import data_cropper
+from src import data_cropper
 
 def main(
     input_path: str,
