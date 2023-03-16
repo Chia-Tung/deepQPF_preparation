@@ -6,7 +6,7 @@ from tqdm import tqdm
 from typing import Tuple
 from datetime import datetime, timedelta
 
-from src.file_util import load_nc, save_nc
+from src.data_util import load_nc, save_nc
 from src.fixed_size_array import FixedSizeArray
 
 
@@ -205,5 +205,6 @@ def listdir(path: str, rev: bool=True) -> str:
 def get_latest(dir:str) -> str:
     year = listdir(dir)
     yearMonth = listdir(os.path.join(dir, year))
-    file = listdir(os.path.join(dir, year, yearMonth))
-    return os.path.join(dir, year, yearMonth, file)
+    yearMonthDay = listdir(os.path.join(dir, year, yearMonth))
+    file = listdir(os.path.join(dir, year, yearMonth, yearMonthDay))
+    return os.path.join(dir, year, yearMonth, yearMonthDay, file)

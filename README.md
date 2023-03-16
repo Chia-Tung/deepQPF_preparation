@@ -4,7 +4,7 @@
   1. [Convert accumulated rainfall (mm) into rain rate (mm/hr)](#1-convert-accumulated-rainfall-mm-into-rain-rate-mmhr)
   2. [Crop the matrix to a target domain](#2-crop-the-matrix-to-a-target-domain)
   3. [Compress data into a sparse matrix](#3-compress-data-into-a-sparse-matrix)
-- Last edit date: 2023-02-19
+- Last edit date: 2023-03-15
 
 # Environment Settings
 1. Recommand to use a virtual environment like conda env
@@ -63,7 +63,7 @@ python main_rain.py \
     -c <store_json_path> \
     --type all
 ```
-:warning: Only suitable for NetCDF files with a specific shape (561x441). For more customized settings, please check `utils/data_util.py`.  
+:warning: Only suitable for NetCDF files. For more customized settings, please check `src/data_util.py`.  
 :warning: Only *SKIP* mode, no *OVERWRITE* mode.  
 :warning: Once the date time is not continuous, the cleaver will reset to zero and keep calculating.
 
@@ -81,7 +81,9 @@ python main_crop.py \
 ```bash
 # cmd:
 python main_compress.py \
-    <input_data_dir> \
-    <output_data_dir> \
+    <input_data_path> \
+    <output_data_path> \
     --workers 4
 ```
+
+test all three functions, plot output data, update README, finish!

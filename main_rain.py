@@ -22,6 +22,7 @@ def main(
     rain_cleaver.run()
 
 if __name__ == "__main__":
+    # python main_rain.py /work/dong1128/database/rain_accu_ten_min/ /work/dong1128/database/rain_rate_ten_min/ -c $PWD --type last
     parser = argparse.ArgumentParser()
     parser.add_argument("input_path", type=str, help="enter input data path")
     parser.add_argument("output_path", type=str, help="enter output data path")

@@ -3,7 +3,7 @@ import numpy as np
 from datetime import datetime
 from netCDF4 import Dataset
 
-from src.file_util import load_nc
+from src.data_util import load_nc
 
 
 class RawRadarData:

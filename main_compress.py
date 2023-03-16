@@ -7,31 +7,32 @@ from pathlib import Path
 
 from src.raw_data import RawRainData, RawRadarData
 
+
 class DataCompressor:
     def __init__(
-        self, 
-        source_dir: str, 
-        destination_dir: str, 
-        overwrite: bool, 
+        self,
+        source_dir: str,
+        destination_dir: str,
+        overwrite: bool,
         year_id: int
     ) -> None:
         # overwirte: If True, replace the older files.
         self.sdir = Path(source_dir)
         self.ddir = Path(destination_dir)
         self.overwrite = overwrite
-        self.id = year_id
         if not self.ddir.exists():
             self.ddir.mkdir(parents=True, exist_ok=True)
-        print(f'[{self.__class__.__name__}] SRC:{self.sdir} DST:{self.ddir} Overwrite:{self.overwrite}')
-        
-    def run(self, workers:int = 1):
-        files = sorted(self.sdir.rglob("*.nc")) # List[PosixPath]
+        print(
+            f'[{self.__class__.__name__}] SRC:{self.sdir} DST:{self.ddir} Overwrite:{self.overwrite}')
+
+    def run(self, workers: int = 1):
+        files = sorted(self.sdir.rglob("*.nc"))  # List[PosixPath]
         with Pool(processes=workers) as pool:
             pool.starmap(self._compress, files)
-            
+
     def _compress(self, fname: Path):
         input_fpath = str(fname)
-        
+
         if 'radar' in input_fpath:
             loader = RawRadarData(input_fpath)
             data = loader.load()['radar']
@@ -44,21 +45,23 @@ class DataCompressor:
         self.create_dir(dt)
         self.save(data, dt, fname.name)
         del loader
-    
+
     def target_path(self, dt: datetime, fname: str):
-        return os.path.join(self.ddir,
-                            str(dt.year),
-                            f'{dt.year}{dt.month:02}',
-                            f'{dt.year}{dt.month:02}{dt.day:02}',
-                            fname + '.gz'
-                           )  
-    
+        return os.path.join(
+            self.ddir,
+            str(dt.year),
+            f'{dt.year}{dt.month:02}',
+            f'{dt.year}{dt.month:02}{dt.day:02}',
+            fname + '.gz'
+        )
+
     def create_dir(self, dt: datetime):
-        day_dir = os.path.join(self.ddir,
-                               str(dt.year),
-                               f'{dt.year}{dt.month:02}',
-                               f'{dt.year}{dt.month:02}{dt.day:02}',
-                              )
+        day_dir = os.path.join(
+            self.ddir,
+            str(dt.year),
+            f'{dt.year}{dt.month:02}',
+            f'{dt.year}{dt.month:02}{dt.day:02}',
+        )
         os.makedirs(day_dir, exist_ok=True)
 
     def save(self, data: np.array, dt: datetime, fname: str):
@@ -80,6 +83,6 @@ if __name__ == '__main__':
     parser.add_argument('--workers', type=int, default=1)
     parser.add_argument('--overwrite', action='store_true')
     args = parser.parse_args()
-    
-    comp = DataCompressor(args.src, args.dest, overwrite=args.overwrite, year_id=args.year_id)
+
+    comp = DataCompressor(args.src, args.dest, overwrite=args.overwrite)
     comp.run(workers=args.workers)
