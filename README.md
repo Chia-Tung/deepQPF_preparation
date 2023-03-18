@@ -85,5 +85,6 @@ python main_compress.py \
     <output_data_path> \
     --workers 4
 ```
-
-test all three functions, plot output data, update README, finish!
+## 4. Visualization
+Please check the `plot_figure.ipynb`.  
+plot output data, update README, finish!

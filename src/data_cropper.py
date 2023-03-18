@@ -8,7 +8,7 @@ from typing import List
 from tqdm import tqdm
 from datetime import datetime
 
-from src.data_util import load_nc, save_nc
+import src.data_utils as du
 
 
 class Cropper:
@@ -27,8 +27,8 @@ class Cropper:
 
     def check_dim(self):
         # get matrix attribute
-        _, self.lat_array, self.lon_array = load_nc(
-            self.orig_nc_files[0], self.key)
+        _, self.lat_array, self.lon_array = du.Netcdf4DataLoader(
+            self.orig_nc_files[0]).extract_data(self.key, 'lat', 'lon')
         self.input_shape = (len(self.lat_array), len(self.lon_array))
         print(f"Input latitude: {self.lat_array[0]} ~ {self.lat_array[-1]}")
         print(f"Input longitude: {self.lon_array[0]} ~ {self.lon_array[-1]}")
@@ -64,26 +64,16 @@ class Cropper:
 
     def execute(self, output_path, remove_old_files, max_workers) -> None:
         start_time = time.time()
-        with concurrent.futures.ProcessPoolExecutor(
-            max_workers=max_workers
-        ) as executor:
-            list(
-                tqdm(
-                    executor.map(
-                        self.crop_one,
-                        self.orig_nc_files,
-                        repeat(output_path),
-                        repeat(remove_old_files),
-                    ),
-                    total=len(self.orig_nc_files),
-                )
-            )
+        with concurrent.futures.ProcessPoolExecutor(max_workers=max_workers) as executor:
+            list(tqdm(executor.map(self.crop_one, self.orig_nc_files, repeat(output_path),
+                                   repeat(remove_old_files)), total=len(self.orig_nc_files)))
         end_time = time.time()
         print(f"spend {end_time - start_time} seconds.")
 
     def crop_one(self, file, output_path, remove_old_files):
         # load
-        data, lat, lon = load_nc(file, self.key)
+        data, lat, lon = du.Netcdf4DataLoader(
+            file).extract_data(self.key, 'lat', 'lon')
 
         # check action
         if np.shape(data) != self.input_shape:
@@ -104,13 +94,13 @@ class Cropper:
         new_file_path = self.get_hierarchical_path_from_nc(file, output_path)
         if new_file_path.exists():
             return
-        save_nc(
+        du.save_nc(
             new_file_path,
             data,
             self.key,
             self.output_shape,
-            self.lat_array[self.iloc[0]: self.iloc[1] + 1],
-            self.lon_array[self.iloc[2]: self.iloc[3] + 1],
+            lat,
+            lon,
         )
 
     def get_hierarchical_path_from_nc(

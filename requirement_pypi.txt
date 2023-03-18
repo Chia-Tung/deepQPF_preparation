@@ -2,3 +2,5 @@
 netcdf4
 tqdm
 autopep8
+ipykernel
+matplotlib

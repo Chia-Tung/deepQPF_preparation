@@ -4,6 +4,7 @@ import numpy as np
 from datetime import datetime
 from multiprocessing import Pool
 from pathlib import Path
+from tqdm import tqdm
 
 from src.raw_data import RawRainData, RawRadarData
 
@@ -14,7 +15,6 @@ class DataCompressor:
         source_dir: str,
         destination_dir: str,
         overwrite: bool,
-        year_id: int
     ) -> None:
         # overwirte: If True, replace the older files.
         self.sdir = Path(source_dir)
@@ -27,8 +27,13 @@ class DataCompressor:
 
     def run(self, workers: int = 1):
         files = sorted(self.sdir.rglob("*.nc"))  # List[PosixPath]
+        files = [(file,) for file in files] # multiprocess need arg iterable
+        """
+        The combination of tqdm and chunksize here is just a workaround.
+        Not good enough.
+        """
         with Pool(processes=workers) as pool:
-            pool.starmap(self._compress, files)
+            pool.starmap(self._compress, tqdm(files, total=len(files)), chunksize=10)
 
     def _compress(self, fname: Path):
         input_fpath = str(fname)
@@ -76,7 +81,8 @@ class DataCompressor:
 
 
 if __name__ == '__main__':
-    # the default value for --year_id is None, and false for --overwrite
+    # python main_compress.py /work/dong1128/database/rain_rate_ten_min/ /work/dong1128/database/rain_rate_compressed/ --workers 4
+    # python main_compress.py /work/dong1128/database/radar_cropped/ /work/dong1128/database/radar_compressed/ --workers 4
     parser = argparse.ArgumentParser(prog='python main_compress.py')
     parser.add_argument('src', type=str, help='source directory.')
     parser.add_argument('dest', type=str, help='destination directory')

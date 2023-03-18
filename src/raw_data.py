@@ -3,7 +3,7 @@ import numpy as np
 from datetime import datetime
 from netCDF4 import Dataset
 
-from src.data_util import load_nc
+import src.data_utils as du
 
 
 class RawRadarData:
@@ -20,7 +20,7 @@ class RawRadarData:
 
     def load(self):
         assert os.path.exists(self._fpath), f'{self._fpath} does not exist!'
-        data, lat, lon = load_nc(self._fpath, 'cv')
+        data, lat, lon = du.Netcdf4DataLoader(self._fpath).extract_data('cv', 'lat', 'lon')
         return {'radar': np.array(data), 'lat': np.array(lat), 'lon': np.array(lon)}
 
 
@@ -38,7 +38,7 @@ class RawRainData:
 
     def load(self):
         assert os.path.exists(self._fpath), f'{self._fpath} does not exist!'
-        data, lat, lon = load_nc(self._fpath, 'qperr')
+        data, lat, lon = du.Netcdf4DataLoader(self._fpath).extract_data('qperr', 'lat', 'lon')
         return {'rain': np.array(data), 'lat': np.array(lat), 'lon': np.array(lon)}
 
 

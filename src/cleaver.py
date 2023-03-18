@@ -6,20 +6,20 @@ from tqdm import tqdm
 from typing import Tuple
 from datetime import datetime, timedelta
 
-from src.data_util import load_nc, save_nc
+import src.data_utils as du
 from src.fixed_size_array import FixedSizeArray
 
 
 class Cleaver:
     def __init__(
-        self, 
-        inp_dir:str, 
-        oup_dir:str, 
-        cwd_dir:str,
+        self,
+        inp_dir: str,
+        oup_dir: str,
+        cwd_dir: str,
         slice_type: str,
         vname: str,
-        mask_fname:str, 
-        fixed_array_fname:str, 
+        mask_fname: str,
+        fixed_array_fname: str,
     ):
         self.inp_dir = inp_dir
         self.oup_dir = oup_dir
@@ -32,38 +32,40 @@ class Cleaver:
             # get current file and its full path
             self.curr_fname = get_latest(inp_dir)
             self.curr_dt = self.get_time_from_path(self.curr_fname)
-            self.curr_data, self.lat, self.lon = load_nc(self.curr_fname, self.vname) # data shape = [561, 441]
+            self.curr_data, self.lat, self.lon = du.Netcdf4DataLoader(
+                self.curr_fname).extract_data(self.vname, 'lat', 'lon')  # data shape = [561, 441]
             self.run = self._run_last
         elif slice_type == "all":
             self.all_files = sorted(list(Path(self.inp_dir).rglob("*.nc")))
             self.run = self._run_all
 
-    def get_time_from_path(self, full_path:str) -> datetime:
+    def get_time_from_path(self, full_path: str) -> datetime:
         # full_path = ../data/output/qperr/2022/202209/20220918_0100.nc
         dt_str = os.path.basename(full_path)
         return datetime.strptime(dt_str.split('.')[0], "%Y%m%d_%H%M")
 
     @classmethod
-    def get_path_from_time(cls, 
-                           root_path:str, 
-                           dt:datetime, 
-                           file_format:str = "%Y%m%d_%H%M.nc"
+    def get_path_from_time(cls,
+                           root_path: str,
+                           dt: datetime,
+                           file_format: str = "%Y%m%d_%H%M.nc"
                            ) -> str:
         year = dt.year
         month = dt.month
         day = dt.day
-        return os.path.join(root_path, 
-                            f"{year}", 
-                            f"{year}{month:02d}", 
+        return os.path.join(root_path,
+                            f"{year}",
+                            f"{year}{month:02d}",
                             f"{year}{month:02d}{day:02d}",
                             dt.strftime(file_format)
-                            )  
+                            )
 
     def _run_all(self):
         for single_file in tqdm(self.all_files):
             self.curr_fname = str(single_file)
             self.curr_dt = self.get_time_from_path(self.curr_fname)
-            self.curr_data, self.lat, self.lon = load_nc(self.curr_fname, self.vname)
+            self.curr_data, self.lat, self.lon = du.Netcdf4DataLoader(
+                self.curr_fname).extract_data(self.vname, 'lat', 'lon')
             self._run_last()
 
     def _run_last(self):
@@ -78,14 +80,14 @@ class Cleaver:
             return
 
         if (not os.path.exists(Cleaver.get_path_from_time(self.inp_dir, prev_time))) \
-            or (not os.path.exists(self.mask_path)) \
-            or (not os.path.exists(self.fixed_size_array_path)):
+                or (not os.path.exists(self.mask_path)) \
+                or (not os.path.exists(self.fixed_size_array_path)):
             # 1. build Mask
             if os.path.exists(self.mask_path):
                 os.remove(self.mask_path)
             mask = (self.curr_data == 0) * 1
             self.write_mask(mask)
-            
+
             # 2. build fix_sized_array
             if os.path.exists(self.fixed_size_array_path):
                 os.remove(self.fixed_size_array_path)
@@ -95,19 +97,23 @@ class Cleaver:
 
             # 3. save t=-6 nc file
             last_data = fix_sized_array.data[0]
-            save_nc(output_fname, last_data, self.vname, self.curr_data.shape, self.lat, self.lon)
-            print(f'10-min data: {os.path.basename(output_fname)} established!')
+            du.save_nc(output_fname, last_data, self.vname,
+                    self.curr_data.shape, self.lat, self.lon)
+            print(
+                f'10-min data: {os.path.basename(output_fname)} established!')
 
             # 4. leave
             print('No previous data for splitting, first init.')
-            
+
         else:
             # 1. read Mask, read fix_sized_array(剔除idx=0)
             mask_orig = self.read_mask()
-            fix_sized_array = FixedSizeArray(pre_data=self.fixed_size_array_path)
-            
+            fix_sized_array = FixedSizeArray(
+                pre_data=self.fixed_size_array_path)
+
             # 2. (data - (fix_sized_array[5]) * mask
-            data_increment = (self.curr_data - fix_sized_array.five_sum()) * mask_orig
+            data_increment = (
+                self.curr_data - fix_sized_array.five_sum()) * mask_orig
             data_increment[data_increment < 0] = 0
 
             # 3. push #2 into fix_sized_array[6]
@@ -115,7 +121,7 @@ class Cleaver:
 
             # 4. find data == 0
             mask_new = (self.curr_data == 0) * 1
-            
+
             # 5. clean fix_sized_array[6] & build
             fix_sized_array.fit_mask(mask_new)
             self.write_fixed_size_array(fix_sized_array.data)
@@ -127,16 +133,18 @@ class Cleaver:
 
             # 7. save t=-6 nc file
             last_data = fix_sized_array.data[0]
-            save_nc(output_fname, last_data, self.vname, self.curr_data.shape, self.lat, self.lon)
-            print(f'10-min data: {os.path.basename(output_fname)} established!')
+            du.save_nc(output_fname, last_data, self.vname,
+                    self.curr_data.shape, self.lat, self.lon)
+            print(
+                f'10-min data: {os.path.basename(output_fname)} established!')
 
             # 8. leave
             print(f'{os.path.basename(self.curr_fname)} has been downscaled.')
-    
+
     def read_mask(self) -> np.ndarray:
         with open(self.mask_path, "r") as f:
             info = json.load(f)
-    
+
         if info['store'] == 'Ace':
             return np.ones((561, 441), dtype=np.int16)
         elif info['store'] == 'False':
@@ -165,7 +173,7 @@ class Cleaver:
         total_size = np.size(mask)
         activate_num = np.sum(mask == 1)
         output = []
-        
+
         if activate_num == total_size:
             return output, 'Ace'
 
@@ -181,7 +189,7 @@ class Cleaver:
             for x, y in zip(d0, d1):
                 output.append((int(x), int(y)))
             return output, 'True'
-    
+
     def write_fixed_size_array(self, data):
         # data = [6, 561, 441]
         information = {}
@@ -196,13 +204,15 @@ class Cleaver:
         with open(self.fixed_size_array_path, "w") as outfile:
             json.dump(information, outfile, indent=2)
 
-def listdir(path: str, rev: bool=True) -> str:
+
+def listdir(path: str, rev: bool = True) -> str:
     """
     return the latest dir/file in one level
     """
-    return sorted(os.listdir(path), reverse = rev)[0] # from large to small
+    return sorted(os.listdir(path), reverse=rev)[0]  # from large to small
 
-def get_latest(dir:str) -> str:
+
+def get_latest(dir: str) -> str:
     year = listdir(dir)
     yearMonth = listdir(os.path.join(dir, year))
     yearMonthDay = listdir(os.path.join(dir, year, yearMonth))
