@@ -1,4 +1,3 @@
-import os
 import netCDF4 as nc
 import numpy as np
 from pathlib import Path
@@ -9,8 +8,8 @@ from src.data_utils.data_loader import DataLoader
 class Netcdf4DataLoader(DataLoader):
     def __init__(self, file_name: str) -> DataLoader:
         assert file_name[-3:] == ".nc", "Not A Regular NetCDF4 File."
-        assert os.path.exists(file_name), f'{file_name} does not exist!'
 
+        self.check_file_exist(file_name)
         self._container = nc.Dataset(file_name)
 
     def extract_data(

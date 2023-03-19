@@ -86,5 +86,4 @@ python main_compress.py \
     --workers 4
 ```
 ## 4. Visualization
-Please check the `plot_figure.ipynb`.  
-plot output data, update README, finish!
+Please check the `plot_figure.ipynb`.
