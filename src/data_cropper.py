@@ -63,14 +63,26 @@ class Cropper:
         print(f"Output shape: {self.output_shape}")
 
     def execute(self, output_path, remove_old_files, max_workers) -> None:
+        self.unprocessed_files = []
+        for file in tqdm(self.orig_nc_files):            
+            new_file_path = self.get_hierarchical_path_from_nc(file, output_path)
+
+            # remove original files
+            if remove_old_files:
+                os.remove(new_file_path)
+
+            if not new_file_path.exists():
+                self.unprocessed_files.append(file)
+
+        # run
         start_time = time.time()
         with concurrent.futures.ProcessPoolExecutor(max_workers=max_workers) as executor:
-            list(tqdm(executor.map(self.crop_one, self.orig_nc_files, repeat(output_path),
-                                   repeat(remove_old_files)), total=len(self.orig_nc_files)))
+            list(tqdm(executor.map(self.crop_one, self.unprocessed_files, 
+                repeat(output_path)), total=len(self.unprocessed_files)))
         end_time = time.time()
         print(f"spend {end_time - start_time} seconds.")
 
-    def crop_one(self, file, output_path, remove_old_files):
+    def crop_one(self, file, output_path):        
         # load
         data, lat, lon = du.Netcdf4DataLoader(
             file).extract_data(self.key, 'lat', 'lon')
@@ -80,10 +92,6 @@ class Cropper:
             raise RuntimeError(
                 f"{os.path.basename(file)} has wrong-shaped input data.")
 
-        # remove original files
-        if remove_old_files:
-            os.remove(file)
-
         # crop
         data = data[self.iloc[0]: self.iloc[1] +
                     1, self.iloc[2]: self.iloc[3] + 1]
@@ -92,16 +100,7 @@ class Cropper:
 
         # save
         new_file_path = self.get_hierarchical_path_from_nc(file, output_path)
-        if new_file_path.exists():
-            return
-        du.save_nc(
-            new_file_path,
-            data,
-            self.key,
-            self.output_shape,
-            lat,
-            lon,
-        )
+        du.save_nc(new_file_path, data, self.key, self.output_shape, lat, lon)
 
     def get_hierarchical_path_from_nc(
         self, file_path: str, output_path: str, file_format: str = "%Y%m%d_%H%M.nc"

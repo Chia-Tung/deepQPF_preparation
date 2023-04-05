@@ -81,8 +81,8 @@ class DataCompressor:
 
 
 if __name__ == '__main__':
-    # python main_compress.py /work/dong1128/database/rain_rate_ten_min/ /work/dong1128/database/rain_rate_compressed/ --workers 4
-    # python main_compress.py /work/dong1128/database/radar_cropped/ /work/dong1128/database/radar_compressed/ --workers 4
+    # python main_compress.py /work/dong1128/database/rain_rate_ten_min/ /work/dong1128/database/rain_rate_ten_min_compressed/ --workers 4
+    # python main_compress.py /work/dong1128/database/radar_2d_cropped/ /work/dong1128/database/radar_2d_cropped_compressed/ --workers 4
     parser = argparse.ArgumentParser(prog='python main_compress.py')
     parser.add_argument('src', type=str, help='source directory.')
     parser.add_argument('dest', type=str, help='destination directory')

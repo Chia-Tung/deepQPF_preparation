@@ -31,7 +31,7 @@ def main(
 
 
 if __name__ == '__main__':
-    # python main_crop.py /work/dong1128/database/radar_uncropped/ /work/dong1128/database/radar_cropped/ --latitude_crop 20 27 --longitude_crop 118 123.5 -k cv
+    # python main_crop.py /work/dong1128/database/radar_2d_uncropped/ /work/dong1128/database/radar_2d_cropped/ --latitude_crop 20 27 --longitude_crop 118 123.5 -k cv
     parser = argparse.ArgumentParser(prog='python main_crop.py')
     parser.add_argument('input_netCDF_path', type=str, help='Source data directory. \
         Only suitable for netCDF files.')
