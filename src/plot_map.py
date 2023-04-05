@@ -27,8 +27,8 @@ def background_map(lon_min: float, lon_max: float, lat_min: float, lat_max: floa
                                  subplot_kw={'projection': ccrs.PlateCarree(central_longitude=0.)})
     # feature
     # geo_axes.stock_img() # low resolution land illustration
-    geo_axes.add_feature(cfeature.LAND, edgecolor='black')
-    geo_axes.add_feature(cfeature.OCEAN.with_scale('10m'))
+    # geo_axes.add_feature(cfeature.LAND, edgecolor='black')
+    # geo_axes.add_feature(cfeature.OCEAN.with_scale('10m'))
     geo_axes.add_feature(cfeature.COASTLINE.with_scale('10m'), lw=1)
     # tick
     geo_axes.set_xticks(np.linspace(lon_min, lon_max, 5),

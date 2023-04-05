@@ -4,7 +4,7 @@
   1. [Convert accumulated rainfall (mm) into rain rate (mm/hr)](#1-convert-accumulated-rainfall-mm-into-rain-rate-mmhr)
   2. [Crop the matrix to a target domain](#2-crop-the-matrix-to-a-target-domain)
   3. [Compress data into a sparse matrix](#3-compress-data-into-a-sparse-matrix)
-- Last edit date: 2023-03-15
+- Last edit date: 2023-04-05
 
 # Environment Settings
 1. Recommand to use a virtual environment like conda env
@@ -63,9 +63,18 @@ python main_rain.py \
     -c <store_json_path> \
     --type all
 ```
-:warning: Only suitable for NetCDF files. For more customized settings, please check `src/data_util.py`.  
-:warning: Only *SKIP* mode, no *OVERWRITE* mode.  
-:warning: Once the date time is not continuous, the cleaver will reset to zero and keep calculating.
+:warning: This is a rough version adopted from a previous project. Some defects listed beblow:
+1. Only **NetCDF** files are suitable.
+2. The `--type all` mode works slowly. Turn off the I/O process in `src/cleaver.py` can solve this issue.
+3. Only **SKIP** mode, no **OVERWRITE** mode.  
+4. Once the date time is not continuous, the cleaver will reset to zero and keep calculating.
+
+### Illustration
+Before conversion (hourly accumulated):  
+<img src="./gallery/accu_20210604_0620.png" width="300" height="300" />  
+After conversion (rain rate per ten minutes):  
+<!-- ![](ezgif.com-gif-maker.gif) -->
+<img src="./gallery/rate_20210604_0530_0620.gif" width="300" height="300" />
 
 ## 2. Crop the matrix to a target domain
 ```bash
@@ -77,6 +86,13 @@ python main_crop.py \
     --longitude_crop 118 123.5 \
     -k cv
 ```
+### Illustration
+Before conversion (large region):  
+<img src="./gallery/radar_uncrop.png" width="300" height="300" />  
+After conversion (small region):  
+<!-- ![](ezgif.com-gif-maker.gif) -->
+<img src="./gallery/radar_cropped.png" width="300" height="300" />
+
 ## 3. Compress data into a sparse matrix
 ```bash
 # cmd:
@@ -85,5 +101,6 @@ python main_compress.py \
     <output_data_path> \
     --workers 4
 ```
+
 ## 4. Visualization
 Please check the `notebook/plot_figure.ipynb`.
