@@ -3,3 +3,5 @@ netcdf4
 tqdm
 ipykernel
 matplotlib
+feather-format
+pandas
