@@ -20,6 +20,8 @@
     ```
 2. Install the required packages
     ```bash
+    conda install --yes --channel conda-forge --file requirement_conda.txt
+
     pip install -r requirement_pypi.txt
     ```
 
@@ -60,14 +62,14 @@ output_data_path/
 python main_rain.py \
     <input_data_path> \
     <output_data_path> \
+    <variable_name> \
     -c <store_json_path> \
     --type all
 ```
 :warning: This is a rough version adopted from a previous project. Some defects listed beblow:
 1. Only **NetCDF** files are suitable.
-2. The `--type all` mode works slowly. Turn off the I/O process in `src/cleaver.py` can solve this issue.
-3. Only **SKIP** mode, no **OVERWRITE** mode.  
-4. Once the date time is not continuous, the cleaver will reset to zero and keep calculating.
+2. Only **--type all** mode, no **--type last** mode.  
+3. Once the date time is not continuous, the cleaver will reset to zero and keep calculating.
 
 ### Illustration
 Before conversion (hourly accumulated):  
@@ -79,7 +81,7 @@ After conversion (rain rate per ten minutes):
 ## 2. Crop the matrix to a target domain
 ```bash
 # cmd:
-python main_crop.py \
+python cropper.py \
     <input_data_path> \
     <output_data_path> \
     --latitude_crop 20 27 \
