@@ -1,4 +1,5 @@
 import os
+
 def listdir(path: str, rev: bool = True) -> str:
     """
     return the latest dir/file in one level

@@ -1,7 +1,7 @@
 # Description
 - This repository helps create the data needed for deepQPF training.
 - It has **three** main functions:
-  1. [Convert accumulated rainfall (mm) into rain rate (mm/hr)](#1-convert-accumulated-rainfall-mm-into-rain-rate-mmhr)
+  1. [Convert accumulated rainfall (mm) to rain rate (mm/hr)](#1-convert-accumulated-rainfall-mm-to-rain-rate-mmhr)
   2. [Crop the matrix to a target domain](#2-crop-the-matrix-to-a-target-domain)
   3. [Compress data into a sparse matrix](#3-compress-data-into-a-sparse-matrix)
 - Last edit date: 2023-04-05
@@ -33,7 +33,7 @@
 :bulb: If you find the pip-installed packages are not in the conda env path, namely you connot find the package in `conda list`, then there must something set in `pip.config` or `pip.ini` under your `$HOME`.
 
 # Quick Start
-## 1. Convert accumulated rainfall (mm) into rain rate (mm/hr)
+## 1. Convert accumulated rainfall (mm) to rain rate (mm/hr)
 ```bash
 # data path
 input_data_path/
@@ -98,7 +98,7 @@ After conversion (small region):
 ## 3. Compress data into a sparse matrix
 ```bash
 # cmd:
-python main_compress.py \
+python compressor.py \
     <input_data_path> \
     <output_data_path> \
     --workers 4

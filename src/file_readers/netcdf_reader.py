@@ -7,6 +7,7 @@ from src.file_readers.basic_reader import BasicReader
 
 class NetcdfReader(BasicReader):
     INVALID_VALUE = -999.
+    FORMAT = "%Y%m%d_%H%M.nc"
 
     def __init__(self):
         pass

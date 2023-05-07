@@ -11,5 +11,9 @@ class BasicReader(metaclass=abc.ABCMeta):
     def read(self) -> None:
         return NotImplemented
     
+    @abc.abstractmethod
+    def save(self) -> None:
+        return NotImplemented
+    
     def check_file_exist(self, filename: str):
         assert os.path.exists(filename), f'{filename} does not exist!'
